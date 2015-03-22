@@ -113,7 +113,7 @@ output [31 : 0] douta;
     .C_WRITE_MODE_B("WRITE_FIRST"),
     .C_WRITE_WIDTH_A(32),
     .C_WRITE_WIDTH_B(32),
-    .C_XDEVICEFAMILY("spartan3")
+    .C_XDEVICEFAMILY("spartan3e")
   )
   inst (
     .CLKA(clka),
