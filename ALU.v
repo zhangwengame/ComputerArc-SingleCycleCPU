@@ -3,7 +3,7 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date:    11:46:08 05/14/2014 
+// Create Date:    10:12:14 05/17/2014 
 // Design Name: 
 // Module Name:    ALU 
 // Project Name: 
@@ -18,22 +18,33 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module ALU(input wire clk,input wire [31:0]A, input wire [31:0]B, input wire [2:0]ALUC, output reg [31:0]S, output reg zero);
-always @(posedge clk)
-begin
-	case (ALUC[2:0])
-		3'b000:S=A&B;
-		3'b001:S=A|B;
-		3'b010:S=A+B;
-		3'b110:S=A-B;
-		3'b111:if (A<B) S=1;
-				 else S=0;
-		default:S=A+B;
-   endcase		
-	if (A==B) zero=1;
-	else zero=0;
-end
-/*assign zero=~S[0]&~S[1]&~S[2]&~S[3]&~S[4]&~S[5]&~S[6]&~S[7]&~S[8]&~S[9]&~S[10]&
-            ~S[11]&~S[12]&~S[13]&~S[14]&~S[15]&~S[16]&~S[17]&~S[18]&~S[19]&~S[20]&
-				~S[21]&~S[22]&~S[23]&~S[24]&~S[25]&~S[26]&~S[27]&~S[28]&~S[29]&~S[30]&~S[31];*/
+module ALU(
+input [31:0] Adat,
+input [31:0] Bdat,
+input [2:0] ALUoper,
+output [31:0] Result,
+output zero,
+output carryout,
+output overflow
+);
+wire slt, caryt, overf;
+wire[31:0] andt, orxt, addsub; 
+
+assign andt = Adat&Bdat;//And
+assign orxt = Adat|Bdat;//Or
+Adder32 a32a(Adat, Bdat, ALUoper[2], ALUoper[2], addsub, caryt, overf); //Add/Sub
+xor(cyt, caryt, ALUoper[2]); //SUB
+xor(slt, overf, addsub[31]); //SLT
+MUX4x1 mx4(Result, {ALUoper[1],ALUoper[0]}, andt, orxt, addsub, {31'h0,slt});
+
+and(carryout, ALUoper[1], ~ALUoper[0], cyt); //carryout
+and(overflow, ALUoper[1], ~ALUoper[0], overf); //overflow
+nor(zero, Result[0], Result[ 1], Result[ 2], Result[ 3],
+Result[ 4], Result[ 5], Result[ 6], Result[ 7],
+Result[ 8], Result[ 9], Result[10], Result[11],
+Result[12], Result[13], Result[14], Result[15],
+Result[16], Result[17], Result[18], Result[19],
+Result[20], Result[21], Result[22], Result[23],
+Result[24], Result[25], Result[26], Result[27],
+Result[28], Result[29], Result[30], Result[31]);
 endmodule
