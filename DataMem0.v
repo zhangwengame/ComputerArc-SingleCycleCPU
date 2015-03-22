@@ -49,36 +49,32 @@
 // supported by Xilinx, Mentor Graphics and Synplicity synthesis
 // tools. Ensure they are correct for your synthesis tool(s).
 
-// You must compile the wrapper file DisMem.v when simulating
-// the core, DisMem. When compiling the wrapper file, be sure to
+// You must compile the wrapper file DataMem0.v when simulating
+// the core, DataMem0. When compiling the wrapper file, be sure to
 // reference the XilinxCoreLib Verilog simulation library. For detailed
 // instructions, please refer to the "CORE Generator Help".
 
 `timescale 1ns/1ps
 
-module DisMem(
+module DataMem0(
 	clka,
 	wea,
 	addra,
 	dina,
-	clkb,
-	addrb,
-	doutb);
+	douta);
 
 
 input clka;
 input [0 : 0] wea;
-input [3 : 0] addra;
+input [5 : 0] addra;
 input [7 : 0] dina;
-input clkb;
-input [3 : 0] addrb;
-output [7 : 0] doutb;
+output [7 : 0] douta;
 
 // synthesis translate_off
 
       BLK_MEM_GEN_V4_3 #(
-		.C_ADDRA_WIDTH(4),
-		.C_ADDRB_WIDTH(4),
+		.C_ADDRA_WIDTH(6),
+		.C_ADDRB_WIDTH(6),
 		.C_ALGORITHM(1),
 		.C_BYTE_SIZE(9),
 		.C_COMMON_CLK(0),
@@ -101,13 +97,13 @@ output [7 : 0] doutb;
 		.C_HAS_SOFTECC_OUTPUT_REGS_B(0),
 		.C_INITA_VAL("0"),
 		.C_INITB_VAL("0"),
-		.C_INIT_FILE_NAME("DisMem.mif"),
-		.C_LOAD_INIT_FILE(1),
-		.C_MEM_TYPE(1),
+		.C_INIT_FILE_NAME("no_coe_file_loaded"),
+		.C_LOAD_INIT_FILE(0),
+		.C_MEM_TYPE(0),
 		.C_MUX_PIPELINE_STAGES(0),
 		.C_PRIM_TYPE(1),
-		.C_READ_DEPTH_A(16),
-		.C_READ_DEPTH_B(16),
+		.C_READ_DEPTH_A(64),
+		.C_READ_DEPTH_B(64),
 		.C_READ_WIDTH_A(8),
 		.C_READ_WIDTH_B(8),
 		.C_RSTRAM_A(0),
@@ -123,8 +119,8 @@ output [7 : 0] doutb;
 		.C_USE_SOFTECC(0),
 		.C_WEA_WIDTH(1),
 		.C_WEB_WIDTH(1),
-		.C_WRITE_DEPTH_A(16),
-		.C_WRITE_DEPTH_B(16),
+		.C_WRITE_DEPTH_A(64),
+		.C_WRITE_DEPTH_B(64),
 		.C_WRITE_MODE_A("WRITE_FIRST"),
 		.C_WRITE_MODE_B("WRITE_FIRST"),
 		.C_WRITE_WIDTH_A(8),
@@ -135,18 +131,18 @@ output [7 : 0] doutb;
 		.WEA(wea),
 		.ADDRA(addra),
 		.DINA(dina),
-		.CLKB(clkb),
-		.ADDRB(addrb),
-		.DOUTB(doutb),
+		.DOUTA(douta),
 		.RSTA(),
 		.ENA(),
 		.REGCEA(),
-		.DOUTA(),
+		.CLKB(),
 		.RSTB(),
 		.ENB(),
 		.REGCEB(),
 		.WEB(),
+		.ADDRB(),
 		.DINB(),
+		.DOUTB(),
 		.INJECTSBITERR(),
 		.INJECTDBITERR(),
 		.SBITERR(),
@@ -158,7 +154,7 @@ output [7 : 0] doutb;
 
 // XST black box declaration
 // box_type "black_box"
-// synthesis attribute box_type of DisMem is "black_box"
+// synthesis attribute box_type of DataMem0 is "black_box"
 
 endmodule
 

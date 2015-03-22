@@ -45,20 +45,23 @@
 *     THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS                 *
 *     PART OF THIS FILE AT ALL TIMES.                                          *
 *******************************************************************************/
+
+//  Generated from component ID: xilinx.com:ip:blk_mem_gen:4.3
+
+
 // The synthesis directives "translate_off/translate_on" specified below are
 // supported by Xilinx, Mentor Graphics and Synplicity synthesis
 // tools. Ensure they are correct for your synthesis tool(s).
 
-// You must compile the wrapper file DateMem.v when simulating
-// the core, DateMem. When compiling the wrapper file, be sure to
+// You must compile the wrapper file blk_mem_gen_v4_3.v when simulating
+// the core, blk_mem_gen_v4_3. When compiling the wrapper file, be sure to
 // reference the XilinxCoreLib Verilog simulation library. For detailed
 // instructions, please refer to the "CORE Generator Help".
 
 `timescale 1ns/1ps
 
-module DateMem(
+module blk_mem_gen_v4_3(
 	clka,
-	ena,
 	wea,
 	addra,
 	dina,
@@ -66,17 +69,16 @@ module DateMem(
 
 
 input clka;
-input ena;
 input [0 : 0] wea;
-input [8 : 0] addra;
-input [7 : 0] dina;
-output [7 : 0] douta;
+input [7 : 0] addra;
+input [31 : 0] dina;
+output [31 : 0] douta;
 
 // synthesis translate_off
 
       BLK_MEM_GEN_V4_3 #(
-		.C_ADDRA_WIDTH(9),
-		.C_ADDRB_WIDTH(9),
+		.C_ADDRA_WIDTH(8),
+		.C_ADDRB_WIDTH(8),
 		.C_ALGORITHM(1),
 		.C_BYTE_SIZE(9),
 		.C_COMMON_CLK(0),
@@ -84,7 +86,7 @@ output [7 : 0] douta;
 		.C_DISABLE_WARN_BHV_COLL(0),
 		.C_DISABLE_WARN_BHV_RANGE(0),
 		.C_FAMILY("spartan3"),
-		.C_HAS_ENA(1),
+		.C_HAS_ENA(0),
 		.C_HAS_ENB(0),
 		.C_HAS_INJECTERR(0),
 		.C_HAS_MEM_OUTPUT_REGS_A(0),
@@ -99,15 +101,15 @@ output [7 : 0] douta;
 		.C_HAS_SOFTECC_OUTPUT_REGS_B(0),
 		.C_INITA_VAL("0"),
 		.C_INITB_VAL("0"),
-		.C_INIT_FILE_NAME("no_coe_file_loaded"),
-		.C_LOAD_INIT_FILE(0),
+		.C_INIT_FILE_NAME("blk_mem_gen_v4_3.mif"),
+		.C_LOAD_INIT_FILE(1),
 		.C_MEM_TYPE(0),
 		.C_MUX_PIPELINE_STAGES(0),
 		.C_PRIM_TYPE(1),
-		.C_READ_DEPTH_A(512),
-		.C_READ_DEPTH_B(512),
-		.C_READ_WIDTH_A(8),
-		.C_READ_WIDTH_B(8),
+		.C_READ_DEPTH_A(256),
+		.C_READ_DEPTH_B(256),
+		.C_READ_WIDTH_A(32),
+		.C_READ_WIDTH_B(32),
 		.C_RSTRAM_A(0),
 		.C_RSTRAM_B(0),
 		.C_RST_PRIORITY_A("CE"),
@@ -121,21 +123,21 @@ output [7 : 0] douta;
 		.C_USE_SOFTECC(0),
 		.C_WEA_WIDTH(1),
 		.C_WEB_WIDTH(1),
-		.C_WRITE_DEPTH_A(512),
-		.C_WRITE_DEPTH_B(512),
+		.C_WRITE_DEPTH_A(256),
+		.C_WRITE_DEPTH_B(256),
 		.C_WRITE_MODE_A("WRITE_FIRST"),
 		.C_WRITE_MODE_B("WRITE_FIRST"),
-		.C_WRITE_WIDTH_A(8),
-		.C_WRITE_WIDTH_B(8),
+		.C_WRITE_WIDTH_A(32),
+		.C_WRITE_WIDTH_B(32),
 		.C_XDEVICEFAMILY("spartan3"))
 	inst (
 		.CLKA(clka),
-		.ENA(ena),
 		.WEA(wea),
 		.ADDRA(addra),
 		.DINA(dina),
 		.DOUTA(douta),
 		.RSTA(),
+		.ENA(),
 		.REGCEA(),
 		.CLKB(),
 		.RSTB(),
@@ -156,7 +158,7 @@ output [7 : 0] douta;
 
 // XST black box declaration
 // box_type "black_box"
-// synthesis attribute box_type of DateMem is "black_box"
+// synthesis attribute box_type of blk_mem_gen_v4_3 is "black_box"
 
 endmodule
 

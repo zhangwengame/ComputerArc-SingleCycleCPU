@@ -3,7 +3,7 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date:    13:07:14 05/15/2014 
+// Create Date:    10:14:14 05/17/2014 
 // Design Name: 
 // Module Name:    SingleCtrl 
 // Project Name: 
@@ -18,33 +18,49 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module SingleCtrl(input wire [5:0]OP,output wire [9:0]sCtrl);
-wire [1:0] ALUop;
-wire RegDst, ALUsrc, MemtoReg, RegWrite,
-MemRead, MemWrite, Branch, Jump, Lw, Sw, R, Beq, Addi, J;
-assign sCtrl[9:8] = ALUop[1:0];
-assign sCtrl[7] = RegDst;
-assign sCtrl[6] = ALUsrc;
-assign sCtrl[5] = MemtoReg;
-assign sCtrl[4] = RegWrite;
-assign sCtrl[3] = MemRead;
-assign sCtrl[2] = MemWrite;
-assign sCtrl[1] = Branch;
-assign sCtrl[0] = Jump;
+module SingleCtrl(
+input [5:0] OP,
+output [2:0] ALUop,
+output RegDst, 
+output ALUsrc, 
+output MemtoReg, 
+output RegWrite,
+output MemRead, 
+output MemWrite, 
+output [1:0]Branch, 
+output Jump
+	);
+wire R,Lw,Se,Beq,Bne,Addi,Andi,Ori,J;
 assign R=~OP[5]&~OP[4]&~OP[3]&~OP[2]&~OP[1]&~OP[0];
 assign Lw=OP[5]&~OP[4]&~OP[3]&~OP[2]&OP[1]&OP[0];
 assign Sw=OP[5]&~OP[4]&OP[3]&~OP[2]&OP[1]&OP[0];
 assign Beq=~OP[5]&~OP[4]&~OP[3]&OP[2]&~OP[1]&~OP[0];
+assign Bne=~OP[5]&~OP[4]&~OP[3]&OP[2]&~OP[1]&OP[0];
 assign Addi=~OP[5]&~OP[4]&OP[3]&~OP[2]&~OP[1]&~OP[0];
+assign Andi=~OP[5]&~OP[4]&OP[3]&OP[2]&~OP[1]&~OP[0];
+assign Ori=~OP[5]&~OP[4]&OP[3]&OP[2]&~OP[1]&OP[0];
 assign J=~OP[5]&~OP[4]&~OP[3]&~OP[2]&OP[1]&~OP[0];
 assign RegDst=R;
-assign ALUsrc=Lw|Sw|Addi;
+assign ALUsrc=Lw|Sw|Addi|Andi|Ori;
 assign MemtoReg=Lw;
-assign RegWrite=R|Lw|Addi;
+assign RegWrite=R|Lw|Addi|Andi|Ori;
 assign MemRead=Lw;
 assign MemWrite=Sw;
-assign Branch=Beq;
+assign Branch[0]=Beq;
+assign Branch[1]=Bne;
+assign ALUop[2]=Andi|Ori;
 assign ALUop[1]=R;
-assign ALUop[0]=Beq;
+assign ALUop[0]=Beq|Ori|Bne;
 assign Jump=J;
+/*and (RegDst, ~OP[5],~OP[4],~OP[3],~OP[2],~OP[1],~OP[0]);
+and (ALUsrc, OP[5],~OP[4], ~OP[2], OP[1], OP[0]);
+and (MemtoReg, OP[5],~OP[4],~OP[3],~OP[2], OP[1], OP[0]);
+and (RegWrite, ~OP[4],~OP[3],~OP[2] );
+and (MemRead, OP[5],~OP[4],~OP[3],~OP[2], OP[1], OP[0]);
+and (MemWrite, OP[5],~OP[4], OP[3],~OP[2], OP[1], OP[0]);
+and (Branch, ~OP[5],~OP[4],~OP[3], OP[2],~OP[1],~OP[0]);
+and (ALUop[1], ~OP[5],~OP[4],~OP[3],~OP[2],~OP[1],~OP[0]);
+and (ALUop[0], ~OP[5],~OP[4],~OP[3], OP[2],~OP[1],~OP[0]);
+and (Jump, ~OP[5], ~OP[4], ~OP[3], ~OP[2], OP[1], ~OP[0]);*/
+
 endmodule

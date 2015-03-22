@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date:    10:52:20 05/14/2014 
+// Create Date:    10:11:17 05/17/2014 
 // Design Name: 
-// Module Name:    Top 
+// Module Name:    top 
 // Project Name: 
 // Target Devices: 
 // Tool versions: 
@@ -18,94 +18,131 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module Top(input wire CCLK, input wire [3:0]BTN_IN, input wire [3:0]SW, 
-output wire LCDE, LCDRS, LCDRW, output wire [3:0]LCDDAT);
-wire [11:0]btn_out;
-reg [31:0]disnum_32;
-reg [31:0]PC;
-wire [1023:0]Check;
-wire [31:0]Ins,RData1,RData2,ALUB,S,DataOut,WData,BeqPC,NormalPC,NextPC1,JPC,NextPC2;
-wire [9:0]sCtrl,b,s;
-wire [4:0]WR;
-wire [2:0]ALUoper;
-wire [7:0]Dismem;
-wire zero;
-wire [1:0]DisMemIn;
-initial
-begin
-	PC=0;
-end
-/*assign Out=PC;
-assign Out2=Ins;
-assign Out3=Dismem;*/
-assign WR=(Ins[20:16]&{5{~sCtrl[7]}})|(Ins[15:11]&{5{sCtrl[7]}});
-assign ALUB[31:0]=(RData2[31:0]&{32{~sCtrl[6]}})|({{16{Ins[15]}},Ins[15:0]}&{32{sCtrl[6]}});
-assign WData[31:0]=(S[31:0]&{32{~sCtrl[5]}})|(DataOut[31:0]&{32{sCtrl[5]}});
-assign NormalPC[31:0]=PC[31:0]+4;
-assign JPC[31:0]={NormalPC[31:28],Ins[25:0],2'b00};
-assign BeqPC[31:0]=NormalPC[31:0]+{{14{Ins[15]}},Ins[15:0],2'b00};
-assign NextPC1[31:0]=(NormalPC[31:0]&{32{~(zero&sCtrl[1])}})|(BeqPC[31:0]&{32{(zero&sCtrl[1])}});
-assign NextPC2=(NextPC1&{32{~sCtrl[0]}})|(JPC&{32{sCtrl[0]}});
-/*assign sCtrl[9:8] = ALUop[1:0];
-assign sCtrl[7] = RegDst;
-assign sCtrl[6] = ALUsrc;
-assign sCtrl[5] = MemtoReg;
-assign sCtrl[4] = RegWrite;
-assign sCtrl[3] = MemRead;
-assign sCtrl[2] = MemWrite;
-assign sCtrl[1] = Branch;
-assign sCtrl[0] = Jump;*/
-InsMem i0(.clka(clk),.wea(0),.addra(PC[11:2]),.dina(0),.douta(Ins[31:0])); 
-SingleCtrl s0(.OP(Ins[31:26]),.sCtrl(sCtrl[9:0]));
-Reg r0(.clk(clk),.bclk(btn_out[2]),.RegWrite(sCtrl[4]),.R1(Ins[25:21]),.R2(Ins[20:16]),.WR(WR[4:0]),.WData(WData[31:0]),.RData1(RData1[31:0]),.RData2(RData2[31:0]),.Check(Check[1023:0]));
-ALU A0(.clk(clk),.A(RData1[31:0]),.B(ALUB[31:0]),.ALUC(ALUoper[2:0]),.S(S[31:0]),.zero(zero));
-ALUctrl Ac0(.ALUop(sCtrl[9:8]),.Func(Ins[5:0]),.ALUoper(ALUoper[2:0]));
-DataMemUnit D0(.clk(clk),.bclk(btn_out[2]),.MemRead(sCtrl[3]),.MemWrite(sCtrl[2]),.addr(S[31:0]),.DataIn(RData2[31:0]),.DisMemIn(DisMemIn[1:0]),.DataOut(DataOut[31:0]),.Dismem(Dismem[7:0]));
-display d2(.clk(clk),.digit(Dismem[7:0]),.memaddr(DisMemIn[1:0]),.node(anode[3:0]),.segment(segment[7:0]),.xw(4'b0000));
+module top(	input CCLK, BTN2, input [3:0] SW, output LCDRS, LCDRW, LCDE, 
+					output [3:0] LCDDAT, output [7:0] LED,output [31:0] disp_num,output [31:0]PC);
+	 
+//	parameter COUNTER=26;
+//	wire [COUNTER-1:0] count_out;
+	wire clk_1ms;
+	wire BTN2_OUT;
+	reg reset=1;
+	wire [3:0] lcdd;
+   wire rslcd, rwlcd, elcd;
+	reg [255:0]strdata = "0123456789abcdefHello world!0000";
+	reg [3:0] temp=0;
+	reg [19:0] disp_code;
+	reg [4:0] sww;
+	wire [31:0] disp_num;
+	
+	assign LCDDAT[3]=lcdd[3];
+	assign LCDDAT[2]=lcdd[2];
+	assign LCDDAT[1]=lcdd[1];
+	assign LCDDAT[0]=lcdd[0];
 
-pbdebounce p0(clk,btn_in[0],btn_out[0]);
-pbdebounce p1(clk,btn_in[1],btn_out[1]);
-pbdebounce p2(clk,btn_in[2],btn_out[2]);
-always @(posedge btn_out[2])
-begin
-	PC<=NextPC2;
-end
-display32bits d1(clk,disnum_32,anode[11:4],segment[15:8]);
-always @(posedge clk)
-begin
-	case (switch[4:0])
-		5'b00000: disnum_32=Check[1023:992];
-		5'b00001: disnum_32=Check[991:960];
-		5'b00010: disnum_32=Check[959:928];
-		5'b00011: disnum_32=Check[927:896];
-		5'b00100: disnum_32=Check[895:864];
-		5'b00101: disnum_32=Check[863:832];
-		5'b00110: disnum_32=Check[831:800];
-		5'b00111: disnum_32=Check[799:768];
-		5'b01000: disnum_32=Check[767:736];
-		5'b01001: disnum_32=Check[735:704];
-		5'b01010: disnum_32=Check[703:672];
-		5'b01011: disnum_32=Check[671:640];
-		5'b01100: disnum_32=Check[639:608];
-		5'b01101: disnum_32=Check[607:576];
-		5'b01110: disnum_32=Check[575:544];
-		5'b01111: disnum_32=Check[543:512];
-		5'b10000: disnum_32=Check[511:480];
-		5'b10001: disnum_32=Check[479:448];
-		5'b10010: disnum_32=Check[447:416];
-		5'b10011: disnum_32=Check[415:384];
-		5'b10100: disnum_32=Check[383:352];
-		5'b10101: disnum_32=Check[351:320];
-		5'b10110: disnum_32=Check[319:288];
-		5'b10111: disnum_32=Check[287:256];
-		5'b11000: disnum_32=Check[255:224];
-		5'b11001: disnum_32=Check[223:192];
-		5'b11010: disnum_32=Check[191:160];
-		5'b11011: disnum_32=Check[159:128];
-		5'b11100: disnum_32=Check[127:96];
-		5'b11101: disnum_32=Check[95:64];
-		5'b11110: disnum_32=Check[63:32];
-		5'b11111: disnum_32=Check[31:0];	
+	assign LCDRS=rslcd;
+	assign LCDRW=rwlcd;
+	assign LCDE=elcd;
+
+	assign LED[0] = SW[0];
+	assign LED[1] = SW[1];
+	assign LED[2] = SW[2];
+	assign LED[3] = SW[3];
+	assign LED[4] = temp[0];
+	assign LED[5] = temp[1];
+	assign LED[6] = temp[2];
+	assign LED[7] = temp[3];
+
+	display M0 (CCLK, debpb0, strdata, rslcd, rwlcd, elcd, lcdd);      
+	
+	clock M2 (CCLK, 25000, clk_1ms);
+   pbdebounce M1 (clk_1ms, BTN2, BTN2_OUT);
+	
+	always @(posedge BTN2_OUT)
+	begin
+		temp = temp +1;
+		case(temp) 
+			4'b0000:strdata[7:0] <= "0";
+			4'b0001:strdata[7:0] <= "1";
+			4'b0010:strdata[7:0] <= "2";
+			4'b0011:strdata[7:0] <= "3";
+			4'b0100:strdata[7:0] <= "4";
+			4'b0101:strdata[7:0] <= "5";
+			4'b0110:strdata[7:0] <= "6";
+			4'b0111:strdata[7:0] <= "7";
+			4'b1000:strdata[7:0] <= "8";
+			4'b1001:strdata[7:0] <= "9";
+			4'b1010:strdata[7:0] <= "A";
+			4'b1011:strdata[7:0] <= "B";
+			4'b1100:strdata[7:0] <= "C";
+			4'b1101:strdata[7:0] <= "D";
+			4'b1110:strdata[7:0] <= "E";
+			4'b1111:strdata[7:0] <= "F";
+			default:strdata[7:0] <= "0";
+			endcase
+	end
+//	counter_26bit m1(clk, reset, clk_1ms, count_out);
+//	key_switch m2(clk_1ms, count_out, push, sw, push_out, sw_out); 	
+//	display m3(clk, count_out, disp_code, blinking, digit_anode, display);
+//	display_x m4(clk,disp_num,anode,segment);
+	
+	wire [31:0] OP;	
+	wire [31:0] PC4;
+	wire [31:0] NextPC;
+	wire [31:0] ReadData;
+	wire [31:0] Result;
+	wire [2:0] ALUop;
+	wire [1:0] Branch;
+	wire RegDst, ALUsrc, MemtoReg, RegWrite, MemRead, MemWrite,  Jump;
+	wire zero, PCclk;
+	wire [4:0] regA, regB, regW;
+	wire [31:0] Adat, Bdat, BBdat, Wdat;
+	wire [2:0] ALUoper;
+	wire [9:0] PCclk_;
+	wire [5:0] Func;
+	wire [31:0] BranchTo;
+	
+	wire [55:0] tempdata;
+	
+	reg [31:0] PC;
+	initial PC = 0;
+	
+	always@(posedge CCLK)begin
+	case(SW[3:0])
+		0:disp_code={Bdat[9:0],2'b00,Result[7:0]};
+		//0:disp_code={1'b0,Adat[7:4],1'b0,Adat[3:0],1'b0,Bdat[7:4],1'b0,Bdat[3:0]};
+		1:disp_code={1'b0,Result[15:12],1'b0,Result[11:8],1'b0,Result[7:4],1'b0,Result[3:0]};
+		2:disp_code={1'b0,1'b0,ALUoper[2:0],regW[4:0],1'b0,ReadData[7:4],1'b0,ReadData[3:0]};
+		3:disp_code={1'b0,Wdat[15:12],1'b0,Wdat[11:8],1'b0,Wdat[7:4],1'b0,Wdat[3:0]};
+		4:disp_code={1'b0,ReadData[15:12],1'b0,ReadData[11:8],1'b0,ReadData[7:4],1'b0,ReadData[3:0]};
+		5:disp_code=tempdata[19:0];
+		6:disp_code=tempdata[39:20];
+		7:disp_code={4'd0,tempdata[55:40]};
+		8:disp_code={1'b0,PC[15:12],1'b0,PC[11:8],1'b0,PC[7:4],1'b0,PC[3:0]};
+		9:disp_code={1'b0,NextPC[15:12],1'b0,NextPC[11:8],1'b0,NextPC[7:4],1'b0,NextPC[3:0]};
+		10:disp_code={4'b0,zero,4'b0,Branch,1'b0,BranchTo[7:4],1'b0,BranchTo[3:0]};
 	endcase
-end
+	end
+	
+	assign PCclk = BTN2;//BTN2_OUT;	
+	assign PC4 = PC + 4;
+	assign NextPC = Jump?{PC4[31:28],OP[25:0],2'b00}:((zero&Branch[0]|~zero&Branch[1])?BranchTo:PC4);
+	assign regA = OP[25:21];
+	assign regB = OP[20:16];
+	assign regW = RegDst?OP[15:11]:OP[20:16];
+	assign Wdat = MemtoReg?ReadData:Result;
+	assign Func = OP[5:0];
+	assign BBdat = ALUsrc?{16'd0,OP[15:0]}:Bdat;
+	
+	always@(posedge PCclk) PC <= NextPC;
+	
+	SingleCtrl m5(OP[31:26], ALUop, RegDst, ALUsrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, Jump);
+	RegFile m6(PCclk, PCclk_, regA, regB, regW, Wdat, Adat, Bdat, RegWrite, {1'b0,SW[3:0]}, disp_num);	
+	ALU m7 (Adat,BBdat,ALUoper,Result,zero,,);
+	ALUctr m8(ALUop, Func, ALUoper);
+	InstrMem m9(.clka(CCLK),.addra(PC[9:2]),.douta(OP));
+	ALU m10(PC4,{{14{OP[15]}},OP[15:0],2'b00},3'b010,BranchTo,,,);
+	DataMems m11(PCclk_[4], Result[7:0],Bdat, MemRead, MemWrite, ReadData,tempdata);
+	delay m12(PCclk,CCLK,PCclk_,);
+	
+	
 endmodule

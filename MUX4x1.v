@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date:    11:17:09 05/14/2014 
+// Create Date:    10:28:48 05/17/2014 
 // Design Name: 
-// Module Name:    time_1ms 
+// Module Name:    MUX4x1 
 // Project Name: 
 // Target Devices: 
 // Tool versions: 
@@ -18,20 +18,15 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module timer_1ms
-	(input wire clk,
-	output reg clk_1ms);	
-	reg [15:0] cnt;
-	initial begin
-	cnt [15:0] <=0;
-	clk_1ms <= 0;
-	end
-	always@(posedge clk)
-	if(cnt>=25000) begin
-	cnt<=0;
-	clk_1ms <= ~clk_1ms;
-	end
-	else begin
-	cnt<=cnt+1;
-	end
+module MUX4x1(
+output [31:0] Result,
+input [1:0] oper,
+input [31:0] x0,
+input [31:0] x1,
+input [31:0] x2,
+input [31:0] x3
+);
+
+assign Result = oper[1]?(oper[0]?x3:x2):(oper[0]?x1:x0);
+
 endmodule
