@@ -28,14 +28,18 @@ output carryout,
 output overflow
 );
 wire slt, caryt, overf;
-wire[31:0] andt, orxt, addsub; 
-
+wire[31:0] andt, orxt, addsub,sll,srl,sra; 
+wire signed[31:0] signedBdat;
+assign signedBdat=Bdat;
 assign andt = Adat&Bdat;//And
 assign orxt = Adat|Bdat;//Or
+assign sll  = Bdat<<Adat;
+assign srl  = Bdat>>Adat;
+assign sra  = signedBdat>>>Adat;
 Adder32 a32a(Adat, Bdat, ALUoper[2], ALUoper[2], addsub, caryt, overf); //Add/Sub
 xor(cyt, caryt, ALUoper[2]); //SUB
 xor(slt, overf, addsub[31]); //SLT
-MUX4x1 mx4(Result, {ALUoper[1],ALUoper[0]}, andt, orxt, addsub, {31'h0,slt});
+MUX8x1 mx8(Result, {ALUoper[2],ALUoper[1],ALUoper[0]}, andt, orxt, addsub, sll, srl, sra, addsub, {31'h0,slt});
 
 and(carryout, ALUoper[1], ~ALUoper[0], cyt); //carryout
 and(overflow, ALUoper[1], ~ALUoper[0], overf); //overflow
@@ -48,3 +52,11 @@ Result[20], Result[21], Result[22], Result[23],
 Result[24], Result[25], Result[26], Result[27],
 Result[28], Result[29], Result[30], Result[31]);
 endmodule
+/*000 And
+001 Or
+010 Add
+011 Sll
+100 Srl
+101 Sra
+110 Sub
+111 SLT*/

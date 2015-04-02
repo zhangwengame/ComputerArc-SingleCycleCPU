@@ -18,22 +18,25 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module top(	input CCLK, BTN2, input [3:0] SW, output LCDRS, LCDRW, LCDE, 
-					output [3:0] LCDDAT, output [7:0] LED,output [31:0] disp_num,output [31:0]PC);
+module top(	input CCLK, BTN1,BTN2, BTN3 ,input [3:0] SW, output LCDRS, LCDRW, LCDE, 
+					output [3:0] LCDDAT, output [7:0] LED/*,output [31:0] disp_num,output [31:0]PC,output [31:0]AAdat,output [31:0]BBdat,output [31:0]Result,output [2:0]ALUoper*/);
 	 
 //	parameter COUNTER=26;
 //	wire [COUNTER-1:0] count_out;
 	wire clk_1ms;
-	wire BTN2_OUT;
+	wire BTN1_OUT,BTN2_OUT,BTN3_OUT;
 	reg reset=1;
 	wire [3:0] lcdd;
    wire rslcd, rwlcd, elcd;
-	reg [255:0]strdata = "0123456789abcdefHello world!0000";
+	reg [255:0]strdata = "P:111 I:12345678N:111 R:12345678";
 	reg [3:0] temp=0;
 	reg [19:0] disp_code;
 	reg [4:0] sww;
 	wire [31:0] disp_num;
-	
+	wire [63:0] regnum;
+	wire [63:0] opnum;
+	wire [23:0] pcnum;
+	wire [23:0] rnonum;
 	assign LCDDAT[3]=lcdd[3];
 	assign LCDDAT[2]=lcdd[2];
 	assign LCDDAT[1]=lcdd[1];
@@ -52,12 +55,15 @@ module top(	input CCLK, BTN2, input [3:0] SW, output LCDRS, LCDRW, LCDE,
 	assign LED[6] = temp[2];
 	assign LED[7] = temp[3];
 
-	display M0 (CCLK, debpb0, strdata, rslcd, rwlcd, elcd, lcdd);      
+	display M0 (CCLK, BTN3_OUT, strdata, rslcd, rwlcd, elcd, lcdd);      
 	
 	clock M2 (CCLK, 25000, clk_1ms);
-   pbdebounce M1 (clk_1ms, BTN2, BTN2_OUT);
-	
-	always @(posedge BTN2_OUT)
+	pbdebounce P3 (clk_1ms, BTN1, BTN1_OUT);
+   pbdebounce P1 (clk_1ms, BTN2, BTN2_OUT);
+	pbdebounce P2 (clk_1ms, BTN3, BTN3_OUT);
+
+
+	/*always @(posedge BTN3_OUT)
 	begin
 		temp = temp +1;
 		case(temp) 
@@ -79,7 +85,7 @@ module top(	input CCLK, BTN2, input [3:0] SW, output LCDRS, LCDRW, LCDE,
 			4'b1111:strdata[7:0] <= "F";
 			default:strdata[7:0] <= "0";
 			endcase
-	end
+	end*/
 //	counter_26bit m1(clk, reset, clk_1ms, count_out);
 //	key_switch m2(clk_1ms, count_out, push, sw, push_out, sw_out); 	
 //	display m3(clk, count_out, disp_code, blinking, digit_anode, display);
@@ -92,10 +98,10 @@ module top(	input CCLK, BTN2, input [3:0] SW, output LCDRS, LCDRW, LCDE,
 	wire [31:0] Result;
 	wire [2:0] ALUop;
 	wire [1:0] Branch;
-	wire RegDst, ALUsrc, MemtoReg, RegWrite, MemRead, MemWrite,  Jump;
+	wire RegDst, ALUsrcB, ALUsrcA,MemtoReg, RegWrite, MemRead, MemWrite,  Jump;
 	wire zero, PCclk;
 	wire [4:0] regA, regB, regW;
-	wire [31:0] Adat, Bdat, BBdat, Wdat;
+	wire [31:0] Adat, Bdat, BBdat, AAdat, Wdat;
 	wire [2:0] ALUoper;
 	wire [9:0] PCclk_;
 	wire [5:0] Func;
@@ -123,7 +129,16 @@ module top(	input CCLK, BTN2, input [3:0] SW, output LCDRS, LCDRW, LCDE,
 	endcase
 	end
 	
-	assign PCclk = BTN2;//BTN2_OUT;	
+	Parse32 P32_1(CCLK,disp_num[31:0],regnum[63:0]);
+	Parse32 P32_2(CCLK,OP[31:0],opnum[63:0]);
+	Parse12 P12_1(CCLK,PC[11:0],pcnum[23:0]);
+	Parse12 P12_2(CCLK,{{7{1'b0}},BTN1_OUT,SW[3:0]},rnonum[23:0]);
+	always @(posedge CCLK) strdata[239:216]<=pcnum[23:0];
+	always @(posedge CCLK) strdata[111:88]<=rnonum[23:0];
+	always @(posedge CCLK) strdata[63:0]<=regnum[63:0];
+	always @(posedge CCLK) strdata[191:128]<=opnum[63:0];
+	
+	assign PCclk = BTN2_OUT;//BTN2_OUT;	
 	assign PC4 = PC + 4;
 	assign NextPC = Jump?{PC4[31:28],OP[25:0],2'b00}:((zero&Branch[0]|~zero&Branch[1])?BranchTo:PC4);
 	assign regA = OP[25:21];
@@ -131,13 +146,13 @@ module top(	input CCLK, BTN2, input [3:0] SW, output LCDRS, LCDRW, LCDE,
 	assign regW = RegDst?OP[15:11]:OP[20:16];
 	assign Wdat = MemtoReg?ReadData:Result;
 	assign Func = OP[5:0];
-	assign BBdat = ALUsrc?{16'd0,OP[15:0]}:Bdat;
-	
+	assign BBdat = ALUsrcB?{{16{OP[15]}},OP[15:0]}:Bdat;
+	assign AAdat = ALUsrcA?{{27{OP[10]}},OP[10:6]}:Adat;
 	always@(posedge PCclk) PC <= NextPC;
 	
-	SingleCtrl m5(OP[31:26], ALUop, RegDst, ALUsrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, Jump);
-	RegFile m6(PCclk, PCclk_, regA, regB, regW, Wdat, Adat, Bdat, RegWrite, {1'b0,SW[3:0]}, disp_num);	
-	ALU m7 (Adat,BBdat,ALUoper,Result,zero,,);
+	SingleCtrl m5(OP[31:26], OP[5:0],ALUop, RegDst, ALUsrcA, ALUsrcB, MemtoReg, RegWrite, MemRead, MemWrite, Branch, Jump);
+	RegFile m6(PCclk, PCclk_, regA, regB, regW, Wdat, Adat, Bdat, RegWrite, {BTN1_OUT,SW[3:0]}, disp_num);	
+	ALU m7 (AAdat,BBdat,ALUoper,Result,zero,,);
 	ALUctr m8(ALUop, Func, ALUoper);
 	InstrMem m9(.clka(CCLK),.addra(PC[9:2]),.douta(OP));
 	ALU m10(PC4,{{14{OP[15]}},OP[15:0],2'b00},3'b010,BranchTo,,,);

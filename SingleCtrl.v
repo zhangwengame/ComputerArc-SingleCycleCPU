@@ -20,9 +20,11 @@
 //////////////////////////////////////////////////////////////////////////////////
 module SingleCtrl(
 input [5:0] OP,
+input [5:0] Func,
 output [2:0] ALUop,
 output RegDst, 
-output ALUsrc, 
+output ALUsrcA,
+output ALUsrcB, 
 output MemtoReg, 
 output RegWrite,
 output MemRead, 
@@ -30,7 +32,7 @@ output MemWrite,
 output [1:0]Branch, 
 output Jump
 	);
-wire R,Lw,Se,Beq,Bne,Addi,Andi,Ori,J;
+wire R,Lw,Se,Beq,Bne,Addi,Andi,Ori,J,Sll,Srl,Sra;
 assign R=~OP[5]&~OP[4]&~OP[3]&~OP[2]&~OP[1]&~OP[0];
 assign Lw=OP[5]&~OP[4]&~OP[3]&~OP[2]&OP[1]&OP[0];
 assign Sw=OP[5]&~OP[4]&OP[3]&~OP[2]&OP[1]&OP[0];
@@ -40,10 +42,14 @@ assign Addi=~OP[5]&~OP[4]&OP[3]&~OP[2]&~OP[1]&~OP[0];
 assign Andi=~OP[5]&~OP[4]&OP[3]&OP[2]&~OP[1]&~OP[0];
 assign Ori=~OP[5]&~OP[4]&OP[3]&OP[2]&~OP[1]&OP[0];
 assign J=~OP[5]&~OP[4]&~OP[3]&~OP[2]&OP[1]&~OP[0];
-assign RegDst=R;
-assign ALUsrc=Lw|Sw|Addi|Andi|Ori;
+assign Sll=R&~Func[5]&~Func[4]&~Func[3]&~Func[2]&~Func[1]&~Func[0]; //000000
+assign Srl=R&~Func[5]&~Func[4]&~Func[3]&~Func[2]&Func[1]&~Func[0]; //000010
+assign Sra=R&~Func[5]&~Func[4]&~Func[3]&~Func[2]&Func[1]&Func[0]; //000011
+assign RegDst=R; 
+assign ALUsrcB=Lw|Sw|Addi|Andi|Ori;
+assign ALUsrcA=Sll|Srl|Sra;
 assign MemtoReg=Lw;
-assign RegWrite=R|Lw|Addi|Andi|Ori;
+assign RegWrite=R|Lw|Addi|Andi|Ori|Sll|Srl|Sra;
 assign MemRead=Lw;
 assign MemWrite=Sw;
 assign Branch[0]=Beq;
